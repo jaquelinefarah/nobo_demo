@@ -1,10 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8">
   <title>Investor Map – British Columbia (Demo Data)</title>
-
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -25,7 +23,7 @@
       background-color: white;
       padding: 8px 14px;
       border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
       color: #17193b;
       text-decoration: none;
       font-weight: 600;
@@ -44,13 +42,13 @@
       position: absolute;
       top: 60px;
       left: 15px;
-      background: rgba(255, 255, 255, 0.9);
+      background: rgba(255,255,255,0.9);
       padding: 6px 10px;
       border-radius: 6px;
       font-size: 16px;
       color: #17193b;
       z-index: 9;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
       margin: 0;
     }
 
@@ -81,17 +79,14 @@
 
     /* 🔹 Legend box */
     .legend {
-      background: rgba(255, 255, 255, 0.95);
-      padding: 12px 14px;
+      background: white;
+      padding: 10px;
+      margin: 10px;
       font-size: 14px;
       font-family: Arial, sans-serif;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-      line-height: 1.6;
-      position: absolute;
-      bottom: 25px;
-      left: 15px;
-      z-index: 5;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      line-height: 20px;
     }
 
     .legend img {
@@ -109,94 +104,39 @@
 </head>
 
 <body>
-  <!-- 🔹 Navigation button -->
+  <!-- 🔹 Back button -->
   <a href="index.html" id="back-button">⬅ Back to Dashboard</a>
 
   <!-- 🔹 Title -->
   <h3>Investor Map – British Columbia (Demo Data)</h3>
 
-  <!-- 🔹 Map container -->
-  <div id="map"></div>
-
   <!-- 🔹 Filter box -->
   <div id="filter-box">
     <b>Show Clusters:</b>
-    <label><input type="checkbox" value="Top Priority Contacts" checked> Top Priority</label>
-    <label><input type="checkbox" value="High-Potential Contacts" checked> High-Potential</label>
-    <label><input type="checkbox" value="Potential Contacts" checked> Potential</label>
-    <label><input type="checkbox" value="Low-Potential Contacts" checked> Low-Potential</label>
-    <label><input type="checkbox" value="Pending Contact Method" checked> Pending Contact Method</label>
-    <label><input type="checkbox" value="Do Not Contact" checked> Do Not Contact</label>
+    <label><input type="checkbox" id="clusterTop" checked> Top Priority</label>
+    <label><input type="checkbox" id="clusterHigh" checked> High-Potential</label>
+    <label><input type="checkbox" id="clusterPotential" checked> Potential</label>
+    <label><input type="checkbox" id="clusterLow" checked> Low-Potential</label>
+    <label><input type="checkbox" id="clusterPending" checked> Pending Contact Method</label>
+    <label><input type="checkbox" id="clusterDoNot" checked> Do Not Contact</label>
   </div>
 
+  <div id="map"></div>
   <div id="legend" class="legend"><b>Legend</b></div>
 
   <script>
     async function initMap() {
-      // 🔹 Initialize map centered on Vancouver, BC
+      const centerBC = { lat: 49.25, lng: -123.1 };
       const map = new google.maps.Map(document.getElementById("map"), {
         zoom: 7,
-        center: { lat: 49.25, lng: -123.1 }
-      });
-
-      // 🔹 Reference points
-      const airport = { lat: 49.1967, lng: -123.1815 };
-      const cityHall = { lat: 49.2609, lng: -123.1139 };
-
-      // 🔹 Add icons for airport and city hall
-      new google.maps.Marker({
-        position: airport,
-        map,
-        icon: {
-          url: "http://maps.google.com/mapfiles/kml/shapes/airports.png",
-          scaledSize: new google.maps.Size(40, 40)
-        },
-        title: "Vancouver International Airport"
-      });
-
-      new google.maps.Marker({
-        position: cityHall,
-        map,
-        icon: {
-          url: "http://maps.google.com/mapfiles/kml/shapes/capital_small.png",
-          scaledSize: new google.maps.Size(40, 40)
-        },
-        title: "Vancouver City Hall"
-      });
-
-      // 🔹 Optional distance circles (approx.)
-      new google.maps.Circle({
-        strokeColor: "#0000FF",
-        strokeOpacity: 0.6,
-        strokeWeight: 2,
-        fillColor: "#0000FF",
-        fillOpacity: 0.1,
-        map,
-        center: airport,
-        radius: 30000
-      });
-
-      new google.maps.Circle({
-        strokeColor: "#FF0000",
-        strokeOpacity: 0.6,
-        strokeWeight: 2,
-        fillColor: "#FF0000",
-        fillOpacity: 0.1,
-        map,
-        center: cityHall,
-        radius: 20000
+        center: centerBC,
       });
 
       // 🔹 Load investor data
       const response = await fetch("data/nobo_demo_bc.json");
-      const allInvestors = await response.json();
+      const investors = await response.json();
 
-      // 🔹 Filter only BC investors
-      const investorsBC = allInvestors.filter(
-        inv => inv.province && inv.province.toUpperCase() === "BRITISH COLUMBIA"
-      );
-
-      // 🔹 Cluster color map
+      // 🔹 Marker icons by cluster
       const clusterIcons = {
         "Top Priority Contacts": "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
         "High-Potential Contacts": "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
@@ -206,43 +146,54 @@
         "Do Not Contact": "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png"
       };
 
+      const markersByCluster = {};
+      for (const cluster in clusterIcons) {
+        markersByCluster[cluster] = [];
+      }
+
+      // 🔹 Normalize cluster names
+      function normalizeCluster(cluster) {
+        if (!cluster) return "Do Not Contact";
+        cluster = cluster.toLowerCase();
+        if (cluster.includes("top")) return "Top Priority Contacts";
+        if (cluster.includes("high")) return "High-Potential Contacts";
+        if (cluster.includes("potential") && !cluster.includes("low")) return "Potential Contacts";
+        if (cluster.includes("low")) return "Low-Potential Contacts";
+        if (cluster.includes("pending")) return "Pending Contact Method";
+        if (cluster.includes("not")) return "Do Not Contact";
+        return "Do Not Contact";
+      }
+
       // 🔹 Create map markers
-      const markers = [];
-      investorsBC.forEach(inv => {
+      investors.forEach(inv => {
         if (inv.lat && inv.lon) {
-          const latOffset = (Math.random() - 0.5) * 0.0006;
-          const lonOffset = (Math.random() - 0.5) * 0.0006;
+          const clusterClean = normalizeCluster(inv.cluster);
+          const iconUrl = clusterIcons[clusterClean];
 
           const marker = new google.maps.Marker({
-            position: { lat: inv.lat + latOffset, lng: inv.lon + lonOffset },
-            map,
-            icon: clusterIcons[inv.cluster] || "http://maps.google.com/mapfiles/ms/icons/gray-dot.png",
-            title: `${inv.name} (${inv.cluster})`
+            position: { lat: inv.lat, lng: inv.lon },
+            map: map,
+            title: `${inv.name} (${inv.city})`,
+            icon: iconUrl
           });
 
           const info = new google.maps.InfoWindow({
             content: `
-              <div style="font-size:14px; line-height:1.5; max-width:280px;">
+              <div style="font-size:14px; line-height:1.4;">
                 <b>${inv.name}</b><br>
-                <b>City:</b> ${inv.city || "N/A"}<br>
-                <b>Shares:</b> ${Number(inv.shares).toLocaleString()}<br>
-                <b>Tier:</b> ${inv.tier || "N/A"}<br>
-                <b>Cluster:</b> ${inv.cluster || "N/A"}<br>
-
-                <hr style="margin:6px 0;">
+                City: ${inv.city}<br>
+                Shares: ${Number(inv.shares).toLocaleString()}<br>
+                Tier: ${inv.tier}<br>
+                Cluster: ${clusterClean}<br>
+                <hr>
                 <b>Regional Data (FSA):</b><br>
-                Avg. Income: $${Number(inv.income).toLocaleString('en-US', { maximumFractionDigits: 0 })} K<br>
+                Avg. Income: $${Number(inv.income).toFixed(1)}K<br>
                 Avg. Age: ${Math.round(inv.age)} years
-
-                <hr style="margin:6px 0;">
-                <b>Distances (from Vancouver):</b><br>
-                ✈️ <b>Airport:</b> ${inv.dist_to_airport_km?.toFixed(1) || "N/A"} km • ${Math.round(inv.time_to_airport_min) || "N/A"} min<br>
-                🏛️ <b>City Hall:</b> ${inv.dist_to_cityhall_km?.toFixed(1) || "N/A"} km • ${Math.round(inv.time_to_cityhall_min) || "N/A"} min
               </div>`
           });
 
           marker.addListener("click", () => info.open(map, marker));
-          markers.push({ marker, cluster: inv.cluster });
+          markersByCluster[clusterClean].push(marker);
         }
       });
 
@@ -254,33 +205,41 @@
         legend.appendChild(div);
       }
 
-      // 🔹 Counter (inside legend)
+      // 🔹 Counter
       const counterDiv = document.createElement("div");
       counterDiv.id = "counter";
-      counterDiv.textContent = "Visible Investors: 0";
       legend.appendChild(counterDiv);
-      map.getDiv().appendChild(legend);
+      map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(legend);
 
-      // 🔹 Update visible counter
       function updateCounter() {
-        const visibleCount = markers.filter(obj => obj.marker.getVisible()).length;
+        let visibleCount = 0;
+        for (const cluster in markersByCluster) {
+          markersByCluster[cluster].forEach(marker => {
+            if (marker.getVisible()) visibleCount++;
+          });
+        }
         counterDiv.textContent = `Visible Investors: ${visibleCount}`;
       }
 
-      // 🔹 Filters
-      const checkboxes = document.querySelectorAll('#filter-box input[type="checkbox"]');
-      checkboxes.forEach(cb => {
-        cb.addEventListener("change", () => {
-          const activeClusters = Array.from(checkboxes)
-            .filter(c => c.checked)
-            .map(c => c.value);
-          markers.forEach(obj => {
-            obj.marker.setVisible(activeClusters.includes(obj.cluster));
-          });
+      // 🔹 Checkbox filters
+      const checkboxes = {
+        "Top Priority Contacts": document.getElementById("clusterTop"),
+        "High-Potential Contacts": document.getElementById("clusterHigh"),
+        "Potential Contacts": document.getElementById("clusterPotential"),
+        "Low-Potential Contacts": document.getElementById("clusterLow"),
+        "Pending Contact Method": document.getElementById("clusterPending"),
+        "Do Not Contact": document.getElementById("clusterDoNot")
+      };
+
+      for (const [cluster, checkbox] of Object.entries(checkboxes)) {
+        checkbox.addEventListener("change", () => {
+          const visible = checkbox.checked;
+          markersByCluster[cluster].forEach(marker => marker.setVisible(visible));
           updateCounter();
         });
-      });
+      }
 
+      // ✅ Initialize counter
       updateCounter();
     }
   </script>
