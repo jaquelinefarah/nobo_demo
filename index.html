@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nobo List Investor Maps – Dashboard</title>
+  <title>Investor Maps – Demo Dashboard</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -12,11 +12,11 @@
       background-color: #ffffff;
     }
 
-    /* === FAIXA SUPERIOR === */
+    /* === TOP BAR === */
     header {
       display: flex;
       align-items: center;
-      background-color: #001f5b; /* azul ValOre */
+      background-color: #1d3557; /* elegant dark blue */
       color: white;
       padding: 10px 30px;
       height: 65px;
@@ -34,7 +34,7 @@
       margin: 0;
     }
 
-    /* === CONTEÚDO CENTRAL === */
+    /* === MAIN CONTENT === */
     .container {
       text-align: center;
       margin-top: 70px;
@@ -47,7 +47,7 @@
       font-weight: 600;
     }
 
-    /* === BOTÕES === */
+    /* === BUTTONS === */
     .button-container {
       display: flex;
       justify-content: center;
@@ -57,56 +57,53 @@
 
     .button-container a {
       text-decoration: none;
-      background-color: #7B8CB2; /* cor personalizada */
+      background-color: #457b9d;
       color: white;
-      padding: 12px 28px;
+      padding: 14px 34px;
       border-radius: 10px;
       font-weight: 500;
+      font-size: 16px;
       transition: all 0.25s ease-in-out;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     }
 
     .button-container a:hover {
-      background-color: #5E6F99;
+      background-color: #365f7c;
       transform: translateY(-2px);
-      box-shadow: 0 0 10px rgba(123, 140, 178, 0.6);
+      box-shadow: 0 0 10px rgba(69, 123, 157, 0.6);
     }
 
     footer {
       text-align: center;
       font-size: 12px;
-      color: #666;
-      margin-top: 50px;
+      color: #555;
+      margin-top: 60px;
       padding-bottom: 20px;
     }
   </style>
 </head>
 
 <body>
-  <!-- 🔹 FAIXA SUPERIOR -->
+  <!-- 🔹 HEADER -->
   <header>
-    <img src="assets/logo.png" alt="ValOre Logo">
-    <h1>NOBO LIST</h1>
+    <img src="assets/logo.png" alt="Company Logo">
+    <h1>INVESTOR MAPS – DEMO</h1>
   </header>
 
-  <!-- 🔹 CONTEÚDO PRINCIPAL -->
+  <!-- 🔹 MAIN CONTENT -->
   <div class="container">
-    <h2>Nobo List Investor Maps – Dashboard</h2>
+    <h2>Interactive Investor Maps (Demo Version)</h2>
 
     <div class="button-container">
-      <a href="investors_map_overview.html">Overview</a>
-      <a href="investors_map_tiers.html">Tiers</a>
-      <a href="investors_map_clusters.html">Clusters</a>
+      <a href="investors_map_overview.html">Overview Map</a>
+      <a href="investors_map_clusters.html">Cluster Map</a>
       <a href="britishcolumbia_map.html">British Columbia</a>
-      <a href="alberta_map.html">Alberta</a>
-      <a href="ontario_map.html">Ontario</a>
     </div>
   </div>
 
-  <!-- 🔹 Rodapé -->
+  <!-- 🔹 FOOTER -->
   <footer>
-    © 2025 ValOre Metals Corp — NOBO List Project
+    © 2025 Investor Data Visualization Project — Demo Version (All data anonymized)
   </footer>
 </body>
 </html>
-
