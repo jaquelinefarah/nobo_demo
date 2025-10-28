@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Investor Map – British Columbia (Demo Data)</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    #map {
+      height: 100vh;
+      width: 100%;
+    }
+
+    /* 🔹 Back button, positioned beside the Map/Satellite selector */
+    #back-button {
+      position: absolute;
+      top: 15px;
+      left: 210px; /* spacing from Google Maps selector */
+      background-color: white;
+      padding: 8px 14px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      color: #17193b;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 13px;
+      z-index: 10;
+      transition: all 0.2s ease-in-out;
+    }
+
+    #back-button:hover {
+      background-color: #f2f2f2;
+      transform: translateY(-1px);
+    }
+
+    /* 🔹 Floating title */
+    h3 {
+      position: absolute;
+      top: 60px;
+      left: 15px;
+      background: rgba(255,255,255,0.9);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 16px;
+      color: #17193b;
+      z-index: 9;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      margin: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 🔹 Back button -->
+  <a href="index.html" id="back-button">⬅ Back to Dashboard</a>
+
+  <!-- 🔹 Title -->
+  <h3>Investor Map – British Columbia (Demo Data)</h3>
+
+  <!-- 🔹 Map container -->
+  <div id="map"></div>
+
+  <script>
+    async function initMap() {
+      // Center the map on British Columbia
+      const centerBC = { lat: 49.25, lng: -123.1 };
+      const map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 7,
+        center: centerBC,
+        mapTypeControl: true,
+      });
+
+      // 🔹 Load data from the demo JSON file (new path)
+      const response = await fetch("data/investors.json");
+      const investors = await response.json();
+
+      // 🔹 Create map markers for each investor
+      investors.forEach(inv => {
+        if (inv.lat && inv.lon) {
+          const marker = new google.maps.Marker({
+            position: { lat: inv.lat, lng: inv.lon },
+            map: map,
+            title: `${inv.name} (${inv.city})`,
+            icon: { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" }
+          });
+
+          // 🔹 Info window content
+          const info = new google.maps.InfoWindow({
+            content: `
+              <div style="font-size:14px; line-height:1.4;">
+                <b>${inv.name}</b><br>
+                City: ${inv.city}<br>
+                Shares: ${Number(inv.shares).toLocaleString()}<br>
+                Tier: ${inv.tier}<br>
+                Cluster: ${inv.cluster}<br>
+                <hr>
+                <b>Regional Data (FSA):</b><br>
+                Avg. Income: $${Number(inv.income).toFixed(1)}K<br>
+                Avg. Age: ${Math.round(inv.age)} years<br>
+                <hr>
+                <b>Distances (from Vancouver):</b><br>
+                ✈️ Airport: ${inv.dist_to_airport_km} km • ${inv.time_to_airport_min} min<br>
+                🏛 City Hall: ${inv.dist_to_cityhall_km} km • ${inv.time_to_cityhall_min} min
+              </div>
+            `
+          });
+
+          marker.addListener("click", () => {
+            info.open(map, marker);
+          });
+        }
+      });
+    }
+  </script>
+
+  <!-- 🔹 Load Google Maps API -->
+  <script src="config.js"></script>
+  <script>
+    const script = document.createElement("script");
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${CONFIG.GOOGLE_MAPS_API_KEY}&callback=initMap`;
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+  </script>
+</body>
+</html>

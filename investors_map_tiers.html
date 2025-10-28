@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Investor Map by Tier – Canada (Demo Data)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    #map {
+      height: 90vh;
+      width: 100%;
+    }
+
+    /* 🔹 Back button, same position and style as other maps */
+    #back-button {
+      position: absolute;
+      top: 15px;
+      left: 210px;
+      background-color: white;
+      padding: 8px 14px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      color: #17193b;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 13px;
+      z-index: 10;
+      transition: all 0.2s ease-in-out;
+    }
+
+    #back-button:hover {
+      background-color: #f2f2f2;
+      transform: translateY(-1px);
+    }
+
+    /* 🔹 Floating title */
+    h3 {
+      position: absolute;
+      top: 60px;
+      left: 15px;
+      background: rgba(255,255,255,0.9);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 16px;
+      color: #17193b;
+      z-index: 9;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      margin: 0;
+    }
+
+    /* 🔹 Filter box */
+    #filter-box {
+      position: absolute;
+      top: 125px;
+      left: 10px;
+      background: white;
+      padding: 12px 16px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      font-size: 14px;
+      z-index: 5;
+      line-height: 1.6;
+    }
+
+    #filter-box b {
+      display: block;
+      margin-bottom: 4px;
+      color: #17193b;
+    }
+
+    #filter-box label {
+      display: block;
+      margin: 3px 0;
+    }
+
+    /* 🔹 Legend box */
+    .legend {
+      background: white;
+      padding: 10px;
+      margin: 10px;
+      font-size: 14px;
+      font-family: Arial, sans-serif;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      line-height: 20px;
+    }
+
+    .legend img {
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    #counter {
+      margin-top: 8px;
+      font-weight: bold;
+      text-align: center;
+      color: #17193b;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 🔹 Back button -->
+  <a href="index.html" id="back-button">⬅ Back to Dashboard</a>
+
+  <!-- 🔹 Title -->
+  <h3>Investor Map by Tier – Canada (Demo Data)</h3>
+
+  <!-- 🔹 Filter box -->
+  <div id="filter-box">
+    <b>Show Tiers:</b>
+    <label><input type="checkbox" id="tierStrategic" checked> Strategic</label>
+    <label><input type="checkbox" id="tierLarge" checked> Large</label>
+    <label><input type="checkbox" id="tierMedium" checked> Medium</label>
+    <label><input type="checkbox" id="tierSmall" checked> Small</label>
+    <label><input type="checkbox" id="tierMicro" checked> Micro</label>
+  </div>
+
+  <div id="map"></div>
+  <div id="legend" class="legend"><b>Legend</b></div>
+
+  <script>
+    async function initMap() {
+      // 🔹 Center map on BC
+      const centerBC = { lat: 49.25, lng: -123.1 }; // Vancouver coordinates
+      const map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 7,
+        center: centerBC,
+      });
+
+
+      // 🔹 Load investor data (JSON path aligned to your repo)
+      const response = await fetch("data/investors.json");
+      const investors = await response.json();
+
+      // 🔹 Marker icons by Tier
+      const tierIcons = {
+        "Strategic – more than 1,000,000 shares": "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+        "Large – up to 1,000,000 shares": "http://maps.google.com/mapfiles/ms/icons/purple-dot.png",
+        "Medium – up to 100,000 shares": "http://maps.google.com/mapfiles/ms/icons/pink-dot.png",
+        "Small – up to 10,000 shares": "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+        "Micro – up to 1,000 shares": "http://maps.google.com/mapfiles/ms/icons/orange-dot.png"
+      };
+
+      const markersByTier = {};
+      for (const tier in tierIcons) {
+        markersByTier[tier] = [];
+      }
+
+      // 🔹 Create map markers with slight random offset (to prevent overlap)
+      investors.forEach(inv => {
+        if (inv.lat && inv.lon) {
+          const latOffset = (Math.random() - 0.5) * 0.0006;
+          const lonOffset = (Math.random() - 0.5) * 0.0006;
+
+          const marker = new google.maps.Marker({
+            position: { lat: inv.lat + latOffset, lng: inv.lon + lonOffset },
+            map: map,
+            title: `${inv.name} (${inv.city})`,
+            icon: tierIcons[inv.tier] || "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+          });
+
+          // 🔹 Info window content
+          const info = new google.maps.InfoWindow({
+            content: `
+              <div style="font-size:14px; line-height:1.4;">
+                <b>${inv.name}</b><br>
+                City: ${inv.city}<br>
+                Shares: ${Number(inv.shares).toLocaleString()}<br>
+                Tier: ${inv.tier}<br>
+                Cluster: ${inv.cluster}<br>
+                <hr>
+                <b>Regional Data (FSA):</b><br>
+                Avg. Income: $${Number(inv.income).toFixed(1)}K<br>
+                Avg. Age: ${Math.round(inv.age)} years
+              </div>`
+          });
+
+          marker.addListener("click", () => info.open(map, marker));
+
+          if (markersByTier[inv.tier]) {
+            markersByTier[inv.tier].push(marker);
+          }
+        }
+      });
+
+      // 🔹 Legend box
+      const legend = document.getElementById("legend");
+      for (const [tier, iconUrl] of Object.entries(tierIcons)) {
+        const div = document.createElement("div");
+        div.innerHTML = `<img src="${iconUrl}"> ${tier}`;
+        legend.appendChild(div);
+      }
+
+      // 🔹 Counter (number of visible investors)
+      const counterDiv = document.createElement("div");
+      counterDiv.id = "counter";
+      counterDiv.textContent = "Visible Investors: 0";
+      legend.appendChild(counterDiv);
+      map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(legend);
+
+      function updateCounter() {
+        let visibleCount = 0;
+        for (const tier in markersByTier) {
+          markersByTier[tier].forEach(marker => {
+            if (marker.getVisible()) visibleCount++;
+          });
+        }
+        counterDiv.textContent = `Visible Investors: ${visibleCount}`;
+      }
+
+      // 🔹 Checkbox filters for each Tier
+      const checkboxes = {
+        "Strategic – more than 1,000,000 shares": document.getElementById("tierStrategic"),
+        "Large – up to 1,000,000 shares": document.getElementById("tierLarge"),
+        "Medium – up to 100,000 shares": document.getElementById("tierMedium"),
+        "Small – up to 10,000 shares": document.getElementById("tierSmall"),
+        "Micro – up to 1,000 shares": document.getElementById("tierMicro")
+      };
+
+      for (const [tier, checkbox] of Object.entries(checkboxes)) {
+        checkbox.addEventListener("change", () => {
+          const visible = checkbox.checked;
+          markersByTier[tier].forEach(marker => marker.setVisible(visible));
+          updateCounter();
+        });
+      }
+
+      updateCounter();
+    }
+  </script>
+
+  <!-- 🔹 Load Google Maps API -->
+  <script src="config.js"></script>
+  <script>
+    const script = document.createElement("script");
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${CONFIG.GOOGLE_MAPS_API_KEY}&callback=initMap`;
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+  </script>
+</body>
+</html>
