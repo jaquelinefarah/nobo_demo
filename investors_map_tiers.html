@@ -15,7 +15,7 @@
       width: 100%;
     }
 
-    /* 🔹 Back button, same position and style as other maps */
+    /* 🔹 Back button */
     #back-button {
       position: absolute;
       top: 15px;
@@ -126,24 +126,23 @@
   <script>
     async function initMap() {
       // 🔹 Center map on BC
-      const centerBC = { lat: 49.25, lng: -123.1 }; // Vancouver coordinates
+      const centerBC = { lat: 49.25, lng: -123.1 };
       const map = new google.maps.Map(document.getElementById("map"), {
         zoom: 7,
         center: centerBC,
       });
 
-
-      // 🔹 Load investor data (JSON path aligned to your repo)
+      // 🔹 Load investor data
       const response = await fetch("data/nobo_demo_bc.json");
       const investors = await response.json();
 
-      // 🔹 Marker icons by Tier
+      // 🔹 Marker icons by Tier (match JSON exactly)
       const tierIcons = {
-        "Strategic – more than 1,000,000 shares": "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-        "Large – up to 1,000,000 shares": "http://maps.google.com/mapfiles/ms/icons/purple-dot.png",
-        "Medium – up to 100,000 shares": "http://maps.google.com/mapfiles/ms/icons/pink-dot.png",
-        "Small – up to 10,000 shares": "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-        "Micro – up to 1,000 shares": "http://maps.google.com/mapfiles/ms/icons/orange-dot.png"
+        "Strategic": "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+        "Large": "http://maps.google.com/mapfiles/ms/icons/purple-dot.png",
+        "Medium": "http://maps.google.com/mapfiles/ms/icons/pink-dot.png",
+        "Small": "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+        "Micro": "http://maps.google.com/mapfiles/ms/icons/orange-dot.png"
       };
 
       const markersByTier = {};
@@ -151,20 +150,20 @@
         markersByTier[tier] = [];
       }
 
-      // 🔹 Create map markers with slight random offset (to prevent overlap)
+      // 🔹 Create map markers
       investors.forEach(inv => {
         if (inv.lat && inv.lon) {
           const latOffset = (Math.random() - 0.5) * 0.0006;
           const lonOffset = (Math.random() - 0.5) * 0.0006;
+          const iconUrl = tierIcons[inv.tier] || "http://maps.google.com/mapfiles/ms/icons/blue-dot.png";
 
           const marker = new google.maps.Marker({
             position: { lat: inv.lat + latOffset, lng: inv.lon + lonOffset },
             map: map,
             title: `${inv.name} (${inv.city})`,
-            icon: tierIcons[inv.tier] || "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+            icon: iconUrl
           });
 
-          // 🔹 Info window content
           const info = new google.maps.InfoWindow({
             content: `
               <div style="font-size:14px; line-height:1.4;">
@@ -182,9 +181,7 @@
 
           marker.addListener("click", () => info.open(map, marker));
 
-          if (markersByTier[inv.tier]) {
-            markersByTier[inv.tier].push(marker);
-          }
+          if (markersByTier[inv.tier]) markersByTier[inv.tier].push(marker);
         }
       });
 
@@ -196,7 +193,7 @@
         legend.appendChild(div);
       }
 
-      // 🔹 Counter (number of visible investors)
+      // 🔹 Counter
       const counterDiv = document.createElement("div");
       counterDiv.id = "counter";
       counterDiv.textContent = "Visible Investors: 0";
@@ -213,13 +210,13 @@
         counterDiv.textContent = `Visible Investors: ${visibleCount}`;
       }
 
-      // 🔹 Checkbox filters for each Tier
+      // 🔹 Checkbox filters
       const checkboxes = {
-        "Strategic – more than 1,000,000 shares": document.getElementById("tierStrategic"),
-        "Large – up to 1,000,000 shares": document.getElementById("tierLarge"),
-        "Medium – up to 100,000 shares": document.getElementById("tierMedium"),
-        "Small – up to 10,000 shares": document.getElementById("tierSmall"),
-        "Micro – up to 1,000 shares": document.getElementById("tierMicro")
+        "Strategic": document.getElementById("tierStrategic"),
+        "Large": document.getElementById("tierLarge"),
+        "Medium": document.getElementById("tierMedium"),
+        "Small": document.getElementById("tierSmall"),
+        "Micro": document.getElementById("tierMicro")
       };
 
       for (const [tier, checkbox] of Object.entries(checkboxes)) {
@@ -230,6 +227,7 @@
         });
       }
 
+      // ✅ Inicializa contador imediatamente
       updateCounter();
     }
   </script>
