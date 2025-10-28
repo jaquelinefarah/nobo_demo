@@ -166,7 +166,7 @@
         fillOpacity: 0.1,
         map,
         center: airport,
-        radius: 30000 // 30 km
+        radius: 30000
       });
 
       new google.maps.Circle({
@@ -177,7 +177,7 @@
         fillOpacity: 0.1,
         map,
         center: cityHall,
-        radius: 20000 // 20 km
+        radius: 20000
       });
 
       // === CARREGAR INVESTIDORES ===
@@ -239,8 +239,7 @@
                 Avg. Age: ${Math.round(inv.age) || "N/A"} years
                 <hr style="margin:6px 0;">
                 <b>Distances (from Vancouver):</b><br>
-                🛫 <b>Airport:</b> ${inv.dist_to_airport_km?.toFixed(1) || "N/A"} km • ${Math.round(inv.time_to_airport_min) || "N/A"} min<br>
-                🏛️ <b>City Hall:</b> ${inv.dist_to_cityhall_km?.toFixed(1) || "N/A"} km • ${Math.round(inv.time_to_cityhall_min) || "N/A"} min
+                <i>Distance data available for integration</i>
               </div>
             `
           });
