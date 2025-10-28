@@ -102,9 +102,6 @@
                 Avg. Income: $${Number(inv.income).toFixed(1)}K<br>
                 Avg. Age: ${Math.round(inv.age)} years<br>
                 <hr>
-                <b>Distances (from Vancouver):</b><br>
-                ✈️ Airport: ${inv.dist_to_airport_km} km • ${inv.time_to_airport_min} min<br>
-                🏛 City Hall: ${inv.dist_to_cityhall_km} km • ${inv.time_to_cityhall_min} min
               </div>
             `
           });
@@ -126,3 +123,4 @@
   script.defer = true;
   document.head.appendChild(script);
 </script>
+
