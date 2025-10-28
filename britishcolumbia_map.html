@@ -94,6 +94,7 @@
       margin-right: 6px;
     }
 
+    /* 🔹 Counter text */
     #counter {
       margin-top: 8px;
       font-weight: bold;
@@ -107,7 +108,7 @@
   <!-- 🔹 Back button -->
   <a href="index.html" id="back-button">⬅ Back to Dashboard</a>
 
-  <!-- 🔹 Title -->
+  <!-- 🔹 Floating title -->
   <h3>Investor Map – British Columbia (Demo Data)</h3>
 
   <!-- 🔹 Filter box -->
@@ -118,7 +119,7 @@
     <label><input type="checkbox" id="clusterPotential" checked> Potential</label>
     <label><input type="checkbox" id="clusterLow" checked> Low-Potential</label>
     <label><input type="checkbox" id="clusterPending" checked> Pending Contact Method</label>
-    <label><input type="checkbox" id="clusterDoNot" checked> Do Not Contact</label>
+    <label><input type="checkbox" id="clusterNon" checked> Do Not Contact</label>
   </div>
 
   <div id="map"></div>
@@ -132,17 +133,63 @@
         center: centerBC,
       });
 
-      // 🔹 Load investor data
+      // === PONTOS FIXOS ===
+      const airport = { lat: 49.1967, lng: -123.1815 };
+      const cityHall = { lat: 49.2609, lng: -123.1139 };
+
+      new google.maps.Marker({
+        position: airport,
+        map,
+        icon: {
+          url: "http://maps.google.com/mapfiles/kml/shapes/airports.png",
+          scaledSize: new google.maps.Size(40, 40)
+        },
+        title: "Vancouver International Airport"
+      });
+
+      new google.maps.Marker({
+        position: cityHall,
+        map,
+        icon: {
+          url: "http://maps.google.com/mapfiles/kml/shapes/capital_small.png",
+          scaledSize: new google.maps.Size(40, 40)
+        },
+        title: "Vancouver City Hall"
+      });
+
+      // === CÍRCULOS DE DISTÂNCIA ===
+      new google.maps.Circle({
+        strokeColor: "#0000FF",
+        strokeOpacity: 0.6,
+        strokeWeight: 2,
+        fillColor: "#0000FF",
+        fillOpacity: 0.1,
+        map,
+        center: airport,
+        radius: 30000 // 30 km
+      });
+
+      new google.maps.Circle({
+        strokeColor: "#FF0000",
+        strokeOpacity: 0.6,
+        strokeWeight: 2,
+        fillColor: "#FF0000",
+        fillOpacity: 0.1,
+        map,
+        center: cityHall,
+        radius: 20000 // 20 km
+      });
+
+      // === CARREGAR INVESTIDORES ===
       const response = await fetch("data/nobo_demo_bc.json");
       const investors = await response.json();
 
-      // 🔹 Marker icons by cluster
       const clusterIcons = {
-        "Top Priority Contacts": "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
-        "High-Potential Contacts": "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-        "Potential Contacts": "http://maps.google.com/mapfiles/ms/icons/purple-dot.png",
-        "Low-Potential Contacts": "http://maps.google.com/mapfiles/ms/icons/pink-dot.png",
-        "Pending Contact Method": "http://maps.google.com/mapfiles/ms/icons/orange-dot.png",
+        "Top Priority Contacts": "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+        "High-Potential Contacts": "http://maps.google.com/mapfiles/ms/icons/purple-dot.png",
+        "Potential Contacts": "http://maps.google.com/mapfiles/ms/icons/pink-dot.png",
+        "Low-Potential Contacts": "http://maps.google.com/mapfiles/ms/icons/orange-dot.png",
+        "Pending Contact Method": "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
         "Do Not Contact": "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png"
       };
 
@@ -151,7 +198,7 @@
         markersByCluster[cluster] = [];
       }
 
-      // 🔹 Normalize cluster names
+      // === NORMALIZAR NOMES DE CLUSTER ===
       function normalizeCluster(cluster) {
         if (!cluster) return "Do Not Contact";
         cluster = cluster.toLowerCase();
@@ -164,11 +211,11 @@
         return "Do Not Contact";
       }
 
-      // 🔹 Create map markers
+      // === CRIAR MARCADORES ===
       investors.forEach(inv => {
         if (inv.lat && inv.lon) {
           const clusterClean = normalizeCluster(inv.cluster);
-          const iconUrl = clusterIcons[clusterClean];
+          const iconUrl = clusterIcons[clusterClean] || "http://maps.google.com/mapfiles/ms/icons/gray-dot.png";
 
           const marker = new google.maps.Marker({
             position: { lat: inv.lat, lng: inv.lon },
@@ -179,17 +226,23 @@
 
           const info = new google.maps.InfoWindow({
             content: `
-              <div style="font-size:14px; line-height:1.4;">
+              <div style="font-size:14px; line-height:1.5; max-width:280px;">
                 <b>${inv.name}</b><br>
-                City: ${inv.city}<br>
-                Shares: ${Number(inv.shares).toLocaleString()}<br>
-                Tier: ${inv.tier}<br>
-                Cluster: ${clusterClean}<br>
-                <hr>
+                <b>City:</b> ${inv.city || "N/A"}<br>
+                <b>Province:</b> ${inv.province || "BC"}<br>
+                <b>Shares:</b> ${Number(inv.shares).toLocaleString()}<br>
+                <b>Tier:</b> ${inv.tier || "N/A"}<br>
+                <b>Cluster:</b> ${clusterClean}<br>
+                <hr style="margin:6px 0;">
                 <b>Regional Data (FSA):</b><br>
-                Avg. Income: $${Number(inv.income).toFixed(1)}K<br>
-                Avg. Age: ${Math.round(inv.age)} years
-              </div>`
+                Avg. Income: $${Number(inv.income || 0).toFixed(1)}K<br>
+                Avg. Age: ${Math.round(inv.age) || "N/A"} years
+                <hr style="margin:6px 0;">
+                <b>Distances (from Vancouver):</b><br>
+                🛫 <b>Airport:</b> ${inv.dist_to_airport_km?.toFixed(1) || "N/A"} km • ${Math.round(inv.time_to_airport_min) || "N/A"} min<br>
+                🏛️ <b>City Hall:</b> ${inv.dist_to_cityhall_km?.toFixed(1) || "N/A"} km • ${Math.round(inv.time_to_cityhall_min) || "N/A"} min
+              </div>
+            `
           });
 
           marker.addListener("click", () => info.open(map, marker));
@@ -197,7 +250,7 @@
         }
       });
 
-      // 🔹 Legend
+      // === LEGENDA ===
       const legend = document.getElementById("legend");
       for (const [cluster, iconUrl] of Object.entries(clusterIcons)) {
         const div = document.createElement("div");
@@ -205,7 +258,7 @@
         legend.appendChild(div);
       }
 
-      // 🔹 Counter
+      // === CONTADOR DE INVESTIDORES ===
       const counterDiv = document.createElement("div");
       counterDiv.id = "counter";
       legend.appendChild(counterDiv);
@@ -221,14 +274,14 @@
         counterDiv.textContent = `Visible Investors: ${visibleCount}`;
       }
 
-      // 🔹 Checkbox filters
+      // === FILTROS ===
       const checkboxes = {
         "Top Priority Contacts": document.getElementById("clusterTop"),
         "High-Potential Contacts": document.getElementById("clusterHigh"),
         "Potential Contacts": document.getElementById("clusterPotential"),
         "Low-Potential Contacts": document.getElementById("clusterLow"),
         "Pending Contact Method": document.getElementById("clusterPending"),
-        "Do Not Contact": document.getElementById("clusterDoNot")
+        "Do Not Contact": document.getElementById("clusterNon")
       };
 
       for (const [cluster, checkbox] of Object.entries(checkboxes)) {
@@ -239,7 +292,6 @@
         });
       }
 
-      // ✅ Initialize counter
       updateCounter();
     }
   </script>
